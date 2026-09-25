@@ -24,8 +24,6 @@ export const CreateStatementModal: React.FC<CreateStatementModalProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [amountStr, setAmountStr] = useState('');
-  const [headerTitle, setHeaderTitle] = useState('BSIT 1-1 — INTRAMS FINANCIAL DATA');
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [error, setError] = useState('');
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -33,9 +31,7 @@ export const CreateStatementModal: React.FC<CreateStatementModalProps> = ({
     if (isOpen) {
       setName('');
       setAmountStr('');
-      setHeaderTitle('BSIT 1-1 — INTRAMS FINANCIAL DATA');
       setError('');
-      setShowAdvanced(false);
 
       setTimeout(() => {
         nameInputRef.current?.focus();
@@ -61,7 +57,6 @@ export const CreateStatementModal: React.FC<CreateStatementModalProps> = ({
     onCreateStatement({
       name: name.trim(),
       requiredAmount: amount,
-      headerTitle: headerTitle.trim() || 'BSIT 1-1 — INTRAMS FINANCIAL DATA',
     });
   };
 
@@ -169,35 +164,6 @@ export const CreateStatementModal: React.FC<CreateStatementModalProps> = ({
                 45 students × {formatPeso(parsePeso(amountStr))} = Target total {formatPeso(parsePeso(amountStr) * 45)}
               </p>
             </div>
-
-            {/* Advanced toggle for custom header */}
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="text-xs font-medium text-slate-500 hover:text-slate-800 underline underline-offset-2"
-              >
-                {showAdvanced ? 'Hide Report Header Title' : 'Customize Report Header Title (Optional)'}
-              </button>
-            </div>
-
-            {showAdvanced && (
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 animate-in fade-in">
-                <label className="block text-xs font-medium text-slate-700">
-                  Document Header Title (Export Banner)
-                </label>
-                <input
-                  type="text"
-                  value={headerTitle}
-                  onChange={(e) => setHeaderTitle(e.target.value)}
-                  placeholder="BSIT 1-1 — INTRAMS FINANCIAL DATA"
-                  className="block w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-                <span className="text-[11px] text-slate-500 block">
-                  Default: &quot;BSIT 1-1 — INTRAMS FINANCIAL DATA&quot; (Appears at top of statement and exported PNG)
-                </span>
-              </div>
-            )}
 
             {error && (
               <div className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs font-medium text-rose-700">
