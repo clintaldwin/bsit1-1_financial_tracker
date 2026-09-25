@@ -1,0 +1,6 @@
+{
+  "name": "BSIT 1-1 Financial Tracker",
+  "description": "Class contribution and financial statement manager for BSIT 1-1. Track student payments, balances, specifications, and generate PNG statement reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
