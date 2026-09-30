@@ -56,7 +56,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200">
         <div>
           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider mb-1.5">
-            BSIT 1-1 Official Portal
+            BSIT 1-1 Official Portal • Treasurer: Del Socorro, Joland
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
             BSIT 1-1 Financial Tracker

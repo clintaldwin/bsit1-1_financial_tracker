@@ -161,6 +161,8 @@ export const StatementDetail: React.FC<StatementDetailProps> = ({
           <div className="text-xs text-slate-400 flex flex-wrap items-center gap-4 pt-1">
             <span>Roster: <strong className="text-slate-200">45 BSIT 1-1 Students</strong></span>
             <span>•</span>
+            <span>Class Treasurer: <strong className="text-emerald-400">Del Socorro, Joland</strong></span>
+            <span>•</span>
             <span>Recorded Payments: <strong className="text-slate-200">{statementPayments.length} transactions</strong></span>
           </div>
         </div>

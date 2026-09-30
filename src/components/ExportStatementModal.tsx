@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Download, Copy, Check, Loader2, AlertCircle, Share2, Info } from 'lucide-react';
+import { X, Download, Copy, Check, Loader2, AlertCircle, Share2, Info, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { toBlob } from 'html-to-image';
 import { Statement, StatementCalculations, StudentStatementSummary } from '../types';
 import { formatPeso } from '../utils/currency';
@@ -40,6 +40,7 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
   if (!isOpen) return null;
 
   const exportDate = formatDate(new Date().toISOString());
+  const treasurerName = 'Del Socorro, Joland';
 
   // Generate standardized filename for the statement
   const getExportFilename = (): string => {
@@ -48,9 +49,11 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
   };
 
   /**
-   * Generates the PNG Blob from the full 1000px off-screen exportTarget element.
-   * This guarantees that ALL 45 students, grand totals, headers, and footer sign-offs
-   * are captured in full, regardless of mobile screen height or user scroll position.
+   * Generates the PNG Blob from the full 1080px off-screen exportTarget element.
+   * High-resolution rendering:
+   * - pixelRatio: 3 (Ultra-crisp 3x super-sampling for crystal clear text when zoomed on phones)
+   * - quality: 1.0 (Maximum uncompressed PNG quality)
+   * - Unconstrained off-screen render guarantees all 45 students, grand totals, and official sign-off are captured.
    */
   const getExportBlob = async (): Promise<Blob> => {
     const node = exportTargetRef.current;
@@ -58,13 +61,12 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
       throw new Error('Report document is not ready yet. Please try again.');
     }
 
-    // Measure the exact unconstrained scroll dimensions
-    const width = 1000;
-    const height = node.scrollHeight || node.offsetHeight || 2400;
+    const width = 1080;
+    const height = node.scrollHeight || node.offsetHeight || 2600;
 
     const blob = await toBlob(node, {
-      quality: 0.98,
-      pixelRatio: 2,
+      quality: 1.0,
+      pixelRatio: 3, // Ultra high-quality rendering
       width,
       height,
       backgroundColor: '#ffffff',
@@ -144,7 +146,7 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
           await navigator.share({
             files: [file],
             title: `BSIT 1-1 Financial Statement - ${statement.name}`,
-            text: `BSIT 1-1 Financial Statement: ${statement.name} (Required: ${formatPeso(statement.requiredAmount)}/student)`,
+            text: `BSIT 1-1 Official Financial Statement: ${statement.name} | Class Treasurer: ${treasurerName} | Required: ${formatPeso(statement.requiredAmount)}/student`,
           });
           return;
         } catch (shareErr: unknown) {
@@ -161,7 +163,7 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
 
       // Graceful fallback: direct download
       downloadBlobAsFile(generatedBlob, filename);
-      setNoticeMessage('Native sharing was unavailable on this browser. Full statement was downloaded as a PNG.');
+      setNoticeMessage('Native sharing was unavailable on this browser. Full statement was downloaded as a high-res PNG.');
     } catch (err: unknown) {
       console.error('Failed in share statement flow:', err);
       const msg = err instanceof Error ? err.message : 'Failed to generate statement image.';
@@ -244,18 +246,22 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
   const headerTitle = statement.headerTitle || 'BSIT 1-1 — INTRAMS FINANCIAL DATA';
 
   /**
-   * Reusable full-report layout renderer.
-   * Shared between the interactive user preview and the hidden 1000px off-screen render target.
+   * High-Fidelity Official Class Report Layout
+   * Includes official class treasurer accreditation: Del Socorro, Joland
    */
   const renderFullReportContent = () => (
     <div
-      className="w-[1000px] bg-white text-slate-900 p-8 shadow-sm border border-slate-300 font-sans"
+      className="w-[1080px] bg-white text-slate-900 p-9 shadow-sm border border-slate-300 font-sans antialiased"
       style={{ fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" }}
     >
       {/* School / Section Header */}
       <div className="border-b-2 border-slate-900 pb-5 mb-5">
         <div className="flex items-start justify-between">
           <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-extrabold uppercase tracking-wider mb-1.5 border border-slate-200">
+              <ShieldCheck className="w-3 h-3 text-emerald-600 inline" />
+              <span>Official Section Treasury Record</span>
+            </div>
             <h1 className="text-2xl font-black tracking-tight text-slate-950 uppercase">
               {headerTitle}
             </h1>
@@ -264,10 +270,10 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
             </p>
           </div>
           <div className="text-right">
-            <div className="inline-block bg-slate-900 text-white text-[11px] font-bold px-3 py-1 rounded">
+            <div className="inline-block bg-slate-900 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-xs">
               CLASS TREASURER REPORT
             </div>
-            <div className="text-xs text-slate-500 mt-1 font-mono">
+            <div className="text-xs text-slate-500 mt-1.5 font-mono">
               Date: <span className="font-semibold text-slate-800">{exportDate}</span>
             </div>
           </div>
@@ -328,18 +334,18 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
         </div>
       </div>
 
-      {/* Complete Students Table (All 45 students rendered without truncation) */}
-      <div className="border border-slate-300 rounded overflow-hidden">
+      {/* Complete Students Table (All 45 students rendered crisply without truncation) */}
+      <div className="border border-slate-300 rounded overflow-hidden shadow-xs">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="bg-slate-900 text-white font-semibold">
-              <th className="py-2 px-2.5 text-center w-10 border-r border-slate-700">#</th>
-              <th className="py-2 px-3 border-r border-slate-700">Student Name</th>
-              <th className="py-2 px-3 border-r border-slate-700">Specification</th>
-              <th className="py-2 px-3 text-right border-r border-slate-700">Required</th>
-              <th className="py-2 px-3 text-right border-r border-slate-700">Amount Paid</th>
-              <th className="py-2 px-3 text-right border-r border-slate-700">Balance</th>
-              <th className="py-2 px-3 text-center w-24">Status</th>
+              <th className="py-2.5 px-3 text-center w-12 border-r border-slate-700">#</th>
+              <th className="py-2.5 px-3.5 border-r border-slate-700">Student Name</th>
+              <th className="py-2.5 px-3 border-r border-slate-700">Specification</th>
+              <th className="py-2.5 px-3.5 text-right border-r border-slate-700">Required</th>
+              <th className="py-2.5 px-3.5 text-right border-r border-slate-700">Amount Paid</th>
+              <th className="py-2.5 px-3.5 text-right border-r border-slate-700">Balance</th>
+              <th className="py-2.5 px-3 text-center w-24">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
@@ -348,33 +354,33 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
                 key={s.student.id}
                 className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/80'}
               >
-                <td className="py-1.5 px-2.5 text-center text-slate-500 font-mono text-[11px] border-r border-slate-200">
+                <td className="py-2 px-3 text-center text-slate-500 font-mono text-[11px] border-r border-slate-200">
                   {s.student.studentNumber}
                 </td>
-                <td className="py-1.5 px-3 font-bold text-slate-900 border-r border-slate-200">
+                <td className="py-2 px-3.5 font-bold text-slate-900 border-r border-slate-200">
                   {s.student.name}
                 </td>
-                <td className="py-1.5 px-3 text-slate-700 border-r border-slate-200">
+                <td className="py-2 px-3 text-slate-700 border-r border-slate-200">
                   {s.specification ? (
-                    <span className="font-medium text-slate-800">{s.specification}</span>
+                    <span className="font-semibold text-slate-800">{s.specification}</span>
                   ) : (
                     <span className="text-slate-300 italic">—</span>
                   )}
                 </td>
-                <td className="py-1.5 px-3 text-right font-mono text-slate-700 border-r border-slate-200">
+                <td className="py-2 px-3.5 text-right font-mono text-slate-700 border-r border-slate-200">
                   {formatPeso(s.requiredAmount)}
                 </td>
-                <td className="py-1.5 px-3 text-right font-mono font-bold text-slate-900 border-r border-slate-200">
+                <td className="py-2 px-3.5 text-right font-mono font-bold text-slate-900 border-r border-slate-200">
                   {formatPeso(s.paidAmount)}
                 </td>
-                <td className="py-1.5 px-3 text-right font-mono font-bold border-r border-slate-200">
+                <td className="py-2 px-3.5 text-right font-mono font-bold border-r border-slate-200">
                   {s.balance > 0 ? (
                     <span className="text-amber-800">{formatPeso(s.balance)}</span>
                   ) : (
                     <span className="text-emerald-700">₱0</span>
                   )}
                 </td>
-                <td className="py-1.5 px-3 text-center">
+                <td className="py-2 px-3 text-center">
                   {s.status === 'paid' && (
                     <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-800 border border-emerald-300 uppercase tracking-wider">
                       Paid
@@ -396,19 +402,19 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
           </tbody>
           <tfoot>
             <tr className="bg-slate-100 font-extrabold border-t-2 border-slate-900 text-xs">
-              <td colSpan={3} className="py-3 px-3 text-right text-slate-900 border-r border-slate-300 uppercase tracking-wider">
-                GRAND TOTALS ({studentSummaries.length} Students):
+              <td colSpan={3} className="py-3.5 px-3.5 text-right text-slate-900 border-r border-slate-300 uppercase tracking-wider">
+                Total ({studentSummaries.length} Students):
               </td>
-              <td className="py-3 px-3 text-right font-mono text-slate-900 border-r border-slate-300">
+              <td className="py-3.5 px-3.5 text-right font-mono text-slate-900 border-r border-slate-300">
                 {formatPeso(calculations.totalRequired)}
               </td>
-              <td className="py-3 px-3 text-right font-mono text-emerald-800 border-r border-slate-300">
+              <td className="py-3.5 px-3.5 text-right font-mono text-emerald-800 border-r border-slate-300">
                 {formatPeso(calculations.totalCollected)}
               </td>
-              <td className="py-3 px-3 text-right font-mono text-amber-800 border-r border-slate-300">
+              <td className="py-3.5 px-3.5 text-right font-mono text-amber-800 border-r border-slate-300">
                 {formatPeso(calculations.totalBalance)}
               </td>
-              <td className="py-3 px-2 text-center text-[10px] font-mono text-slate-700">
+              <td className="py-3.5 px-2 text-center text-[10px] font-mono text-slate-700">
                 {calculations.paidCount}P / {calculations.partialCount}Pr / {calculations.unpaidCount}U
               </td>
             </tr>
@@ -416,15 +422,33 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
         </table>
       </div>
 
-      {/* Bottom Report Summary Box */}
-      <div className="mt-5 pt-4 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+      {/* Official Sign-off and Authentication Footer */}
+      <div className="mt-6 pt-5 border-t-2 border-slate-300 grid grid-cols-2 gap-6 items-end">
         <div>
-          <p className="font-bold text-slate-800 text-sm">BSIT 1-1 Financial Management System</p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Generated for class records, transparency, and audit.</p>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <p className="font-extrabold text-slate-900 text-sm tracking-tight">BSIT 1-1 Financial Management System</p>
+          </div>
+          <p className="text-[11px] text-slate-500">Official section financial record and audit statement.</p>
+          <p className="text-[11px] font-mono text-slate-400 mt-1">
+            Export Date &amp; Time: <span className="font-medium text-slate-700">{exportDate}</span>
+          </p>
         </div>
-        <div className="text-right">
-          <p className="font-mono text-[11px]">Exported on: <span className="font-semibold text-slate-800">{exportDate}</span></p>
-          <p className="text-[11px] text-slate-400 mt-0.5 font-medium">Class Treasurer Sign-off</p>
+
+        {/* Official Class Treasurer Signature Block */}
+        <div className="flex flex-col items-end text-right">
+          <div className="inline-block text-center border-t-2 border-slate-900 pt-2 px-6 min-w-[220px]">
+            <div className="text-sm font-black text-slate-950 uppercase tracking-wide">
+              {treasurerName}
+            </div>
+            <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mt-0.5 flex items-center justify-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 inline" />
+              <span>Official Class Treasurer</span>
+            </div>
+            <div className="text-[10px] text-slate-400 font-medium mt-0.5">
+              BSIT Section 1-1
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -445,7 +469,7 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
             </div>
             <div>
               <h2 className="text-sm sm:text-base font-semibold text-white tracking-tight">Export &amp; Share Full Statement</h2>
-              <p className="text-xs text-slate-400">Captures all {studentSummaries.length} students in a single PNG</p>
+              <p className="text-xs text-slate-400">Class GC &amp; Messenger Ready • {statement.name}</p>
             </div>
           </div>
           <button
@@ -459,8 +483,11 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
 
         {/* Action Toolbar */}
         <div className="p-3 sm:p-4 bg-slate-50 border-b border-slate-200 shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="text-xs text-slate-600 hidden sm:block">
-            Full document will be generated as a high-resolution PNG ({studentSummaries.length} students).
+          <div className="text-xs text-slate-600 flex items-center gap-1.5 hidden sm:flex">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>
+              Certified by <strong className="text-slate-900">{treasurerName}</strong> (Official Class Treasurer)
+            </span>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -469,7 +496,7 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
               onClick={handleCopyToClipboard}
               disabled={isGenerating}
               className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 focus:outline-none transition-colors shadow-xs disabled:opacity-50"
-              title="Copy full image to paste with Ctrl + V"
+              title="Copy high-res image to clipboard"
             >
               {copied ? (
                 <>
@@ -494,17 +521,17 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
               onClick={handleDownloadPng}
               disabled={isGenerating}
               className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 focus:outline-none transition-colors shadow-xs disabled:opacity-50"
-              title="Download image file directly"
+              title="Download high-res PNG file"
             >
               {isGenerating && generatingAction === 'download' ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
-                  <span>Saving...</span>
+                  <span>Generating HD PNG...</span>
                 </>
               ) : (
                 <>
                   <Download className="w-4 h-4 text-slate-600" />
-                  <span>Download PNG</span>
+                  <span>Download HD PNG</span>
                 </>
               )}
             </button>
@@ -518,7 +545,7 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
               {isGenerating && generatingAction === 'share' ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin text-white" />
-                  <span>Generating Full Statement...</span>
+                  <span>Rendering Ultra HD PNG...</span>
                 </>
               ) : (
                 <>
@@ -547,7 +574,7 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
 
         {/* User Interactive Preview (Scrollable view) */}
         <div className="flex-1 overflow-auto p-3 sm:p-6 bg-slate-100 flex justify-center">
-          <div className="w-full max-w-[1000px] overflow-x-auto shadow-md rounded-lg">
+          <div className="w-full max-w-[1080px] overflow-x-auto shadow-md rounded-lg">
             {renderFullReportContent()}
           </div>
         </div>
@@ -555,7 +582,7 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
         {/* Modal Bottom Bar */}
         <div className="bg-slate-50 px-4 sm:px-6 py-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0">
           <p className="text-xs text-slate-500 text-center sm:text-left">
-            On mobile, tap <strong className="text-slate-800">Share Statement</strong> to send the complete image to your Messenger class GC.
+            Click the &quot;Share Statement&quot; lang to send the statement sa GC
           </p>
           <button
             onClick={onClose}
@@ -567,17 +594,16 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
       </div>
 
       {/*
-        OFF-SCREEN FULL-RESOLUTION EXPORT NODE
-        Fixed 1000px width and auto height with all 45 students.
-        Positioned off-screen so html-to-image captures 100% of the statement,
-        completely unaffected by mobile browser viewport or modal scrollbar.
+        OFF-SCREEN ULTRA-HD EXPORT NODE
+        Fixed 1080px width, rendered at pixelRatio: 3 and quality: 1.0.
+        Contains all 45 students, grand totals, and the official treasurer sign-off.
       */}
       <div
         style={{
           position: 'fixed',
           left: '-9999px',
           top: '0',
-          width: '1000px',
+          width: '1080px',
           zIndex: -1,
           pointerEvents: 'none',
         }}
