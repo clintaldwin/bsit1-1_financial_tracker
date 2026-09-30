@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Plus,
   ArrowRight,
   FolderOpen,
   Trash2,
+  Users,
+  ChevronRight,
 } from 'lucide-react';
 import { Payment, Statement, StatementStudentSpec, Student } from '../types';
 import { calculateStatementSummary } from '../utils/calculations';
 import { formatPeso } from '../utils/currency';
+import { ClassRosterModal } from './ClassRosterModal';
 
 interface DashboardProps {
   statements: Statement[];
@@ -28,6 +31,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onOpenStatement,
   onDeleteStatement,
 }) => {
+  const [isRosterModalOpen, setIsRosterModalOpen] = useState(false);
+
   // Compute overall statistics across all statements
   const statementSummaries = statements.map((stmt) => {
     const summary = calculateStatementSummary(stmt, students, payments, specifications);
@@ -41,10 +46,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     (sum, item) => sum + item.calculations.totalCollected,
     0
   );
-  const totalAllRequired = statementSummaries.reduce(
-    (sum, item) => sum + item.calculations.totalRequired,
-    0
-  );
   const totalAllBalance = statementSummaries.reduce(
     (sum, item) => sum + item.calculations.totalBalance,
     0
@@ -52,7 +53,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="space-y-8">
-      {/* Top Header Section as requested */}
+      {/* Top Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200">
         <div>
           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider mb-1.5">
@@ -62,11 +63,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
             BSIT 1-1 Financial Tracker
           </h1>
           <p className="text-sm text-slate-600 mt-1">
-            Class contribution and financial statement manager(Gawing Easy ang Life &lt;3)
+            Class contribution and financial statement manager (Gawing Easy ang Life &lt;3)
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 self-start md:self-auto">
+        <div className="flex items-center gap-2.5 self-start md:self-auto flex-wrap">
+          <button
+            type="button"
+            onClick={() => setIsRosterModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl shadow-xs transition-colors"
+          >
+            <Users className="w-4 h-4 text-indigo-600" />
+            <span>View Class List ({students.length})</span>
+          </button>
+
           <button
             type="button"
             onClick={onOpenCreateModal}
@@ -78,34 +88,51 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
 
-      {/* Overview Stat Strip (if there are statements) */}
-      {statements.length > 0 && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-            <span className="text-xs font-semibold uppercase text-slate-500">Active Statements</span>
-            <div className="text-2xl font-bold font-mono text-slate-900 mt-1">{statements.length}</div>
-            <span className="text-[11px] text-slate-400">Class projects & requirements</span>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl border border-emerald-100 shadow-xs bg-emerald-50/20">
-            <span className="text-xs font-semibold uppercase text-emerald-800">Total Collected</span>
-            <div className="text-2xl font-bold font-mono text-emerald-700 mt-1">{formatPeso(totalAllCollected)}</div>
-            <span className="text-[11px] text-emerald-600 font-medium">Across all statements</span>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl border border-amber-100 shadow-xs bg-amber-50/20">
-            <span className="text-xs font-semibold uppercase text-amber-800">Total Outstanding</span>
-            <div className="text-2xl font-bold font-mono text-amber-700 mt-1">{formatPeso(totalAllBalance)}</div>
-            <span className="text-[11px] text-amber-600 font-medium">Remaining balance</span>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-            <span className="text-xs font-semibold uppercase text-slate-500">Fixed Roster</span>
-            <div className="text-2xl font-bold font-mono text-slate-900 mt-1">{students.length}</div>
-            <span className="text-[11px] text-slate-400">Section BSIT 1-1 students</span>
-          </div>
+      {/* Overview Stat Strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+          <span className="text-xs font-semibold uppercase text-slate-500">Active Statements</span>
+          <div className="text-2xl font-bold font-mono text-slate-900 mt-1">{statements.length}</div>
+          <span className="text-[11px] text-slate-400">Class projects & requirements</span>
         </div>
-      )}
+
+        <div className="bg-white p-4 rounded-xl border border-emerald-100 shadow-xs bg-emerald-50/20">
+          <span className="text-xs font-semibold uppercase text-emerald-800">Total Collected</span>
+          <div className="text-2xl font-bold font-mono text-emerald-700 mt-1">{formatPeso(totalAllCollected)}</div>
+          <span className="text-[11px] text-emerald-600 font-medium">Across all statements</span>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl border border-amber-100 shadow-xs bg-amber-50/20">
+          <span className="text-xs font-semibold uppercase text-amber-800">Total Outstanding</span>
+          <div className="text-2xl font-bold font-mono text-amber-700 mt-1">{formatPeso(totalAllBalance)}</div>
+          <span className="text-[11px] text-amber-600 font-medium">Remaining balance</span>
+        </div>
+
+        {/* CLICKABLE FIXED ROSTER STAT CARD */}
+        <button
+          type="button"
+          onClick={() => setIsRosterModalOpen(true)}
+          className="group text-left bg-white hover:bg-indigo-50/40 p-4 rounded-xl border border-slate-200 hover:border-indigo-300 shadow-xs transition-all cursor-pointer relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+          title="Click to view the complete BSIT 1-1 class roster"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase text-slate-500 group-hover:text-indigo-700 flex items-center gap-1.5 transition-colors">
+              <Users className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Fixed Roster</span>
+            </span>
+            <span className="text-[10px] font-bold text-indigo-600 opacity-80 group-hover:opacity-100 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200 flex items-center gap-0.5">
+              <span>View List</span>
+              <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+            </span>
+          </div>
+          <div className="text-2xl font-bold font-mono text-slate-900 group-hover:text-indigo-950 mt-1 transition-colors">
+            {students.length}
+          </div>
+          <span className="text-[11px] text-indigo-600/80 font-medium block mt-0.5">
+            Click to view all {students.length} students &rarr;
+          </span>
+        </button>
+      </div>
 
       {/* Statements Grid or Empty State */}
       <div className="space-y-4">
@@ -121,7 +148,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {statements.length === 0 ? (
-          /* Attractive Empty State as specified */
+          /* Attractive Empty State */
           <div className="bg-white border-2 border-dashed border-slate-200 rounded-2xl p-10 sm:p-16 text-center shadow-xs">
             <div className="w-16 h-16 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center mx-auto mb-4">
               <FolderOpen className="w-8 h-8 text-slate-400" />
@@ -142,6 +169,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <Plus className="w-4 h-4 text-emerald-400" />
                 <span>+ Create Blank Statement</span>
               </button>
+              <button
+                type="button"
+                onClick={() => setIsRosterModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl shadow-xs transition-colors w-full sm:w-auto justify-center"
+              >
+                <Users className="w-4 h-4 text-indigo-600" />
+                <span>View Class List ({students.length})</span>
+              </button>
             </div>
           </div>
         ) : (
@@ -151,67 +186,70 @@ export const Dashboard: React.FC<DashboardProps> = ({
               return (
                 <div
                   key={statement.id}
-                  className="bg-white rounded-2xl border border-slate-200 hover:border-slate-300 shadow-xs hover:shadow-md transition-all flex flex-col overflow-hidden group"
+                  className="bg-white rounded-2xl border border-slate-200 hover:border-slate-300 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col"
                 >
-                  {/* Card Header */}
-                  <div className="p-5 pb-4 border-b border-slate-100 flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                          STATEMENT
-                        </div>
-                        <h3 className="text-lg font-bold text-slate-950 group-hover:text-indigo-600 transition-colors mt-0.5">
-                          {statement.name}
-                        </h3>
-                      </div>
-                      <div className="text-right">
-                        <span className="inline-block px-2.5 py-1 text-xs font-bold font-mono rounded-lg bg-slate-100 text-slate-800">
+                  <div className="p-5 flex-1 space-y-4">
+                    {/* Card Header */}
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        Financial Statement
+                      </span>
+                      <h3 className="text-lg font-bold text-slate-900 tracking-tight mt-0.5">
+                        {statement.name}
+                      </h3>
+                      <div className="text-xs text-slate-500 mt-1">
+                        Target per student:{' '}
+                        <span className="font-semibold text-slate-800 font-mono">
                           {formatPeso(statement.requiredAmount)}
                         </span>
-                        <div className="text-[10px] text-slate-400 mt-0.5">per student</div>
                       </div>
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="mt-4">
-                      <div className="flex items-center justify-between text-xs mb-1.5 font-medium">
-                        <span className="text-slate-600">Collection Rate</span>
-                        <span className="font-mono font-bold text-slate-900">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-500 font-medium">Collection Progress</span>
+                        <span className="font-bold text-slate-900 font-mono">
                           {calculations.percentCollected}%
                         </span>
                       </div>
-                      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden flex">
+                      <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                         <div
-                          style={{ width: `${calculations.percentCollected}%` }}
-                          className="h-full bg-emerald-500 transition-all duration-300"
+                          className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min(calculations.percentCollected, 100)}%` }}
                         />
                       </div>
                     </div>
 
-                    {/* Key Metrics */}
-                    <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-slate-100 text-xs">
-                      <div>
-                        <div className="text-slate-500 text-[11px]">Total Collected</div>
-                        <div className="font-bold font-mono text-emerald-700 text-sm mt-0.5">
+                    {/* Financial Figures */}
+                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-xs">
+                      <div className="p-2.5 rounded-lg bg-emerald-50/60 border border-emerald-100">
+                        <span className="text-[10px] text-emerald-800 uppercase font-bold tracking-wider">
+                          Collected
+                        </span>
+                        <div className="text-base font-bold font-mono text-emerald-700 mt-0.5">
                           {formatPeso(calculations.totalCollected)}
                         </div>
                       </div>
-                      <div>
-                        <div className="text-slate-500 text-[11px]">Total Remaining</div>
-                        <div className="font-bold font-mono text-amber-700 text-sm mt-0.5">
+
+                      <div className="p-2.5 rounded-lg bg-amber-50/60 border border-amber-100">
+                        <span className="text-[10px] text-amber-800 uppercase font-bold tracking-wider">
+                          Balance
+                        </span>
+                        <div className="text-base font-bold font-mono text-amber-700 mt-0.5">
                           {formatPeso(calculations.totalBalance)}
                         </div>
                       </div>
                     </div>
 
-                    {/* Student Status Counts Pill Row */}
-                    <div className="flex items-center justify-between gap-1.5 mt-3 pt-3 border-t border-slate-100 text-[11px]">
-                      <span className="text-slate-500">{students.length} students:</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold border border-emerald-100">
+                    {/* Student Breakdown Pills */}
+                    <div className="pt-1">
+                      <div className="text-[11px] text-slate-400 font-medium mb-1.5">Status breakdown:</div>
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">
                           {calculations.paidCount} Paid
                         </span>
-                        <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold border border-amber-100">
+                        <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold border border-amber-200">
                           {calculations.partialCount} Partial
                         </span>
                         <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold border border-slate-200">
@@ -247,6 +285,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         )}
       </div>
+
+      {/* Class Roster Modal */}
+      <ClassRosterModal
+        isOpen={isRosterModalOpen}
+        students={students}
+        onClose={() => setIsRosterModalOpen(false)}
+      />
     </div>
   );
 };
