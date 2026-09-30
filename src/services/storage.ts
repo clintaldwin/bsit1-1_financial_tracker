@@ -44,8 +44,12 @@ export function initializeStorage(): void {
 
 export function getStudents(): Student[] {
   const students = safeParse<Student[]>(localStorage.getItem(STORAGE_KEYS.STUDENTS), []);
-  if (students.length === 0) {
-    // If somehow empty, fall back to initial roster
+  if (students.length !== INITIAL_STUDENTS.length) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(INITIAL_STUDENTS));
+    } catch {
+      // ignore
+    }
     return INITIAL_STUDENTS;
   }
   return students;

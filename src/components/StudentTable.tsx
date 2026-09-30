@@ -107,7 +107,7 @@ export const StudentTable: React.FC<StudentTableProps> = ({
               onChange={(e) => setSortOption(e.target.value as SortOption)}
               className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-900"
             >
-              <option value="number">Roster Order (#1-45)</option>
+              <option value="number">Roster Order (#1-47)</option>
               <option value="name">Name (A-Z)</option>
               <option value="balance-desc">Highest Balance First</option>
               <option value="paid-desc">Highest Paid First</option>

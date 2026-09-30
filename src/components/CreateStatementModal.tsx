@@ -82,7 +82,7 @@ export const CreateStatementModal: React.FC<CreateStatementModalProps> = ({
             </div>
             <div>
               <h2 className="text-base font-semibold text-white tracking-tight">Create Blank Statement</h2>
-              <p className="text-xs text-slate-400">Generates entry sheet for all 45 BSIT 1-1 students</p>
+              <p className="text-xs text-slate-400">Generates entry sheet for all 47 BSIT 1-1 students</p>
             </div>
           </div>
           <button
