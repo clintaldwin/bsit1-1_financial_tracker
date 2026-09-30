@@ -75,7 +75,11 @@ export const StatementDetail: React.FC<StatementDetailProps> = ({
     setSelectedStudentForPayment(null);
   };
 
-  const headerBannerText = statement.headerTitle || 'BSIT 1-1 — INTRAMS FINANCIAL DATA';
+  const rawTitle = statement.headerTitle?.trim();
+  const headerBannerText =
+    !rawTitle || rawTitle === 'BSIT 1-1 — INTRAMS FINANCIAL DATA'
+      ? 'BSIT 1-1 — FINANCIAL DATA'
+      : rawTitle;
 
   return (
     <div className="space-y-6">

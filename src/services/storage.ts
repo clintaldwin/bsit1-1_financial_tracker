@@ -71,7 +71,7 @@ export function createStatement(name: string, requiredAmount: number, headerTitl
     requiredAmount: Math.max(0, Math.round((requiredAmount + Number.EPSILON) * 100) / 100),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    headerTitle: headerTitle?.trim() || 'BSIT 1-1 — INTRAMS FINANCIAL DATA',
+    headerTitle: headerTitle?.trim() || 'BSIT 1-1 — FINANCIAL DATA',
   };
 
   const updated = [newStatement, ...statements];

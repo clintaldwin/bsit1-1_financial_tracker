@@ -57,6 +57,7 @@ export const CreateStatementModal: React.FC<CreateStatementModalProps> = ({
     onCreateStatement({
       name: name.trim(),
       requiredAmount: amount,
+      headerTitle: 'BSIT 1-1 — FINANCIAL DATA',
     });
   };
 
