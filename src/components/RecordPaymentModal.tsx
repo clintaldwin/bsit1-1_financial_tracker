@@ -78,14 +78,14 @@ export const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({
   const remainingBalance = studentSummary.balance;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div 
-        className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all"
+        className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] transform transition-all"
         role="dialog"
         aria-modal="true"
       >
         {/* Header */}
-        <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div className="px-5 sm:px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-base">
               ₱
@@ -104,8 +104,8 @@ export const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({
         </div>
 
         {/* Content & Form */}
-        <form onSubmit={handleSubmit}>
-          <div className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
             {/* Student Info Card */}
             <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -244,7 +244,7 @@ export const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({
           </div>
 
           {/* Footer Actions */}
-          <div className="bg-slate-50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 border-t border-slate-100">
+          <div className="bg-slate-50 px-5 sm:px-6 py-3.5 sm:py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 border-t border-slate-100 shrink-0">
             <button
               type="button"
               onClick={onClose}
@@ -254,7 +254,7 @@ export const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({
             </button>
             <button
               type="submit"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-xs transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 sm:py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-xs transition-colors"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>Record Payment</span>

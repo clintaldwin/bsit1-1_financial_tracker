@@ -67,14 +67,14 @@ export const CreateStatementModal: React.FC<CreateStatementModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div 
-        className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all"
+        className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] transform transition-all"
         role="dialog"
         aria-modal="true"
       >
         {/* Header */}
-        <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div className="px-5 sm:px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
               <Plus className="w-4 h-4" />
@@ -93,8 +93,8 @@ export const CreateStatementModal: React.FC<CreateStatementModalProps> = ({
         </div>
 
         {/* Content Form */}
-        <form onSubmit={handleSubmit}>
-          <div className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
             {/* Quick Presets */}
             <div>
               <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
@@ -174,7 +174,7 @@ export const CreateStatementModal: React.FC<CreateStatementModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="bg-slate-50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 border-t border-slate-100">
+          <div className="bg-slate-50 px-5 sm:px-6 py-3.5 sm:py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 border-t border-slate-100 shrink-0">
             <button
               type="button"
               onClick={onClose}
@@ -184,7 +184,7 @@ export const CreateStatementModal: React.FC<CreateStatementModalProps> = ({
             </button>
             <button
               type="submit"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/30 shadow-xs transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 sm:py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/30 shadow-xs transition-colors"
             >
               <Plus className="w-4 h-4" />
               <span>Create Statement</span>

@@ -57,14 +57,14 @@ export const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
         <div 
-          className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh]"
+          className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[85vh]"
           role="dialog"
           aria-modal="true"
         >
           {/* Header */}
-          <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
+          <div className="px-5 sm:px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
                 <History className="w-4 h-4" />
@@ -83,7 +83,7 @@ export const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
           </div>
 
           {/* Subheader Toolbar & Search */}
-          <div className="p-4 bg-slate-50 border-b border-slate-200/80 shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="p-3.5 sm:p-4 bg-slate-50 border-b border-slate-200/80 shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
@@ -170,13 +170,13 @@ export const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="bg-slate-50 px-6 py-3 border-t border-slate-100 flex items-center justify-between shrink-0">
-            <span className="text-xs text-slate-500">
+          <div className="bg-slate-50 px-4 sm:px-6 py-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0">
+            <span className="text-xs text-slate-500 text-center sm:text-left">
               Need to correct a recorded amount? Delete it here and record the corrected amount.
             </span>
             <button
               onClick={onClose}
-              className="px-4 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+              className="w-full sm:w-auto px-4 py-1.5 text-xs sm:text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
             >
               Close
             </button>

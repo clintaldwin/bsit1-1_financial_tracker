@@ -91,48 +91,50 @@ export const StatementDetail: React.FC<StatementDetailProps> = ({
         </button>
 
         {/* Action Buttons Toolbar */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Export / Share PNG */}
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+          {/* Export / Share PNG (Prominent) */}
           <button
             type="button"
             onClick={() => setIsExportModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-xs transition-colors"
+            className="col-span-2 sm:col-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-xs transition-colors"
           >
             <Share2 className="w-4 h-4" />
-            <span>Share / Export</span>
+            <span>Share / Export PNG</span>
           </button>
 
           {/* Payment History */}
           <button
             type="button"
             onClick={() => setIsHistoryModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl shadow-xs transition-colors"
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 active:bg-slate-100 rounded-xl shadow-xs transition-colors"
           >
             <History className="w-4 h-4 text-slate-500" />
             <span>History ({statementPayments.length})</span>
           </button>
 
-          {/* Edit Statement */}
-          <button
-            type="button"
-            onClick={() => setIsEditModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl shadow-xs transition-colors"
-            title="Edit Statement Name and Required Amount"
-          >
-            <Edit2 className="w-4 h-4 text-slate-500" />
-            <span className="hidden sm:inline">Edit</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Edit Statement */}
+            <button
+              type="button"
+              onClick={() => setIsEditModalOpen(true)}
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 active:bg-slate-100 rounded-xl shadow-xs transition-colors"
+              title="Edit Statement Name and Required Amount"
+            >
+              <Edit2 className="w-4 h-4 text-slate-500" />
+              <span>Edit</span>
+            </button>
 
-          {/* Delete Statement */}
-          <button
-            type="button"
-            onClick={() => setIsDeleteConfirmOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-600 bg-white border border-rose-200 hover:bg-rose-50 rounded-xl shadow-xs transition-colors"
-            title="Delete this Statement"
-          >
-            <Trash2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Delete</span>
-          </button>
+            {/* Delete Statement */}
+            <button
+              type="button"
+              onClick={() => setIsDeleteConfirmOpen(true)}
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-600 bg-white border border-rose-200 hover:bg-rose-50 active:bg-rose-100 rounded-xl shadow-xs transition-colors"
+              title="Delete this Statement"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Delete</span>
+            </button>
+          </div>
         </div>
       </div>
 
