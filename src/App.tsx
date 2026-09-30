@@ -59,7 +59,7 @@ export default function App() {
     setIsCreateModalOpen(false);
     setActiveStatementId(newStmt.id);
     setCurrentTab('statement');
-    showToast(`Created statement "${newStmt.name}" with 45 students!`);
+    showToast(`Created statement "${newStmt.name}" with ${students.length} students!`);
   };
 
   const handleUpdateStatement = (statementId: string, updates: { name: string; requiredAmount: number; headerTitle?: string }) => {

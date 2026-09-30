@@ -2,11 +2,11 @@ import { INITIAL_STUDENTS } from '../data/initialRoster';
 import { AppBackupData, Payment, Statement, StatementStudentSpec, Student } from '../types';
 
 const STORAGE_KEYS = {
-  STUDENTS: 'bsit11_students_v1',
+  STUDENTS: 'bsit11_students_v2',
   STATEMENTS: 'bsit11_statements_v1',
   SPECIFICATIONS: 'bsit11_specifications_v1',
   PAYMENTS: 'bsit11_payments_v1',
-  INITIALIZED: 'bsit11_initialized_v1',
+  INITIALIZED: 'bsit11_initialized_v2',
 };
 
 // Safe JSON parse helper
@@ -20,11 +20,11 @@ function safeParse<T>(jsonString: string | null, fallback: T): T {
   }
 }
 
-// Ensure initial 45 students are populated on first launch without overwriting existing data
+// Ensure the official 47 BSIT 1-1 students roster is always accurately updated
 export function initializeStorage(): void {
   try {
-    const existingStudents = localStorage.getItem(STORAGE_KEYS.STUDENTS);
-    if (!existingStudents) {
+    const existingStudents = safeParse<Student[]>(localStorage.getItem(STORAGE_KEYS.STUDENTS), []);
+    if (existingStudents.length !== INITIAL_STUDENTS.length) {
       localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(INITIAL_STUDENTS));
     }
     if (!localStorage.getItem(STORAGE_KEYS.STATEMENTS)) {

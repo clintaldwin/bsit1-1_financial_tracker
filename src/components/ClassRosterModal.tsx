@@ -40,7 +40,7 @@ export const ClassRosterModal: React.FC<ClassRosterModalProps> = ({
                 BSIT 1-1 Official Class Roster
               </h2>
               <p className="text-xs text-slate-400">
-                Fixed 45 students • Official Section Registry
+                Official Section Registry • {students.length} Students
               </p>
             </div>
           </div>

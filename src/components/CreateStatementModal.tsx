@@ -162,7 +162,7 @@ export const CreateStatementModal: React.FC<CreateStatementModalProps> = ({
                 />
               </div>
               <p className="mt-1 text-xs text-slate-500">
-                45 students × {formatPeso(parsePeso(amountStr))} = Target total {formatPeso(parsePeso(amountStr) * 45)}
+                47 students × {formatPeso(parsePeso(amountStr))} = Target total {formatPeso(parsePeso(amountStr) * 47)}
               </p>
             </div>
 
