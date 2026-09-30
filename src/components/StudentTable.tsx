@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Filter, ArrowUpDown, Users, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { PaymentStatus, StudentStatementSummary } from '../types';
-import { StudentRow } from './StudentRow';
+import { StudentTableRow, StudentMobileCard } from './StudentRow';
 
 interface StudentTableProps {
   studentSummaries: StudentStatementSummary[];
@@ -210,7 +210,7 @@ export const StudentTable: React.FC<StudentTableProps> = ({
               </tr>
             ) : (
               filteredAndSorted.map((summary) => (
-                <StudentRow
+                <StudentTableRow
                   key={summary.student.id}
                   summary={summary}
                   onRecordPayment={onRecordPayment}
@@ -233,7 +233,7 @@ export const StudentTable: React.FC<StudentTableProps> = ({
           </div>
         ) : (
           filteredAndSorted.map((summary) => (
-            <StudentRow
+            <StudentMobileCard
               key={summary.student.id}
               summary={summary}
               onRecordPayment={onRecordPayment}

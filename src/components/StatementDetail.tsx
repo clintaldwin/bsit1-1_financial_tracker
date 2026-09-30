@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   ArrowLeft,
-  Download,
+  Share2,
   History,
   Edit2,
   Trash2,
@@ -92,14 +92,14 @@ export const StatementDetail: React.FC<StatementDetailProps> = ({
 
         {/* Action Buttons Toolbar */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Export PNG */}
+          {/* Export / Share PNG */}
           <button
             type="button"
             onClick={() => setIsExportModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-xs transition-colors"
           >
-            <Download className="w-4 h-4" />
-            <span>Export PNG</span>
+            <Share2 className="w-4 h-4" />
+            <span>Share / Export</span>
           </button>
 
           {/* Payment History */}

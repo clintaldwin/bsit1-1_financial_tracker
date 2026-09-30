@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
-import { X, Download, Copy, Check, Eye, Loader2, Sparkles, AlertCircle } from 'lucide-react';
-import { toBlob, toPng } from 'html-to-image';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, Download, Copy, Check, Loader2, Sparkles, AlertCircle, Share2, Info } from 'lucide-react';
+import { toBlob } from 'html-to-image';
 import { Statement, StatementCalculations, StudentStatementSummary } from '../types';
 import { formatPeso } from '../utils/currency';
 import { formatDate } from '../utils/calculations';
@@ -21,76 +21,215 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
   onClose,
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatingAction, setGeneratingAction] = useState<'share' | 'download' | 'copy' | null>(null);
   const [copied, setCopied] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
+  const [canNativeShare, setCanNativeShare] = useState<boolean>(false);
   const reportRef = useRef<HTMLDivElement>(null);
+
+  // Check Web Share API capability on client mount
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      setCanNativeShare(true);
+    }
+  }, []);
 
   if (!isOpen) return null;
 
   const exportDate = formatDate(new Date().toISOString());
 
-  const handleDownloadPng = async () => {
-    if (!reportRef.current) return;
-    setIsGenerating(true);
-    setExportError(null);
+  // Generate standardized file name for the statement
+  const getExportFilename = (): string => {
+    const sanitizedName = statement.name.replace(/[^a-zA-Z0-9_-]/g, '_');
+    return `BSIT-1-1-${sanitizedName}-Financial-Statement.png`;
+  };
 
+  /**
+   * Reusable core function to generate the PNG Blob from the report DOM node.
+   * Maintains high-density settings for crisp rendering on Android / Retina displays.
+   */
+  const getExportBlob = async (): Promise<Blob> => {
+    if (!reportRef.current) {
+      throw new Error('Report document view is not ready yet. Please try again.');
+    }
+
+    const blob = await toBlob(reportRef.current, {
+      quality: 0.98,
+      pixelRatio: 2,
+      backgroundColor: '#ffffff',
+      cacheBust: true,
+      fontEmbedCSS: '',
+      skipFonts: true,
+    });
+
+    if (!blob) {
+      throw new Error('Failed to generate image data. Please try again.');
+    }
+
+    return blob;
+  };
+
+  /**
+   * Trigger a client-side file download given a blob and filename.
+   * Securely revokes object URL after download initiation.
+   */
+  const downloadBlobAsFile = (blob: Blob, filename: string): void => {
+    const objectUrl = URL.createObjectURL(blob);
     try {
-      // Use pixelRatio: 2 for high density, crystal clear on Retina / Mobile
-      const dataUrl = await toPng(reportRef.current, {
-        quality: 0.98,
-        pixelRatio: 2,
-        backgroundColor: '#ffffff',
-        cacheBust: true,
-      });
-
       const link = document.createElement('a');
-      const filename = `BSIT-1-1-${statement.name.replace(/[^a-zA-Z0-9_-]/g, '_')}-Financial-Statement.png`;
       link.download = filename;
-      link.href = dataUrl;
+      link.href = objectUrl;
+      document.body.appendChild(link);
       link.click();
-    } catch (err) {
-      console.error('Failed to export PNG:', err);
-      setExportError('Failed to generate image. Please try again.');
+      document.body.removeChild(link);
     } finally {
-      setIsGenerating(false);
+      // Small timeout ensures browser download thread picks up the URL before revoking
+      setTimeout(() => {
+        URL.revokeObjectURL(objectUrl);
+      }, 1000);
     }
   };
 
-  const handleCopyToClipboard = async () => {
-    if (!reportRef.current) return;
+  /**
+   * Primary action: Native Share sheet flow (mobile-first for Android / Messenger).
+   * Falls back gracefully to direct PNG download if file sharing is unsupported.
+   */
+  const handleShare = async () => {
+    if (isGenerating) return;
     setIsGenerating(true);
+    setGeneratingAction('share');
     setExportError(null);
+    setNoticeMessage(null);
+
+    let generatedBlob: Blob | null = null;
+    const filename = getExportFilename();
 
     try {
-      const blob = await toBlob(reportRef.current, {
-        quality: 0.98,
-        pixelRatio: 2,
-        backgroundColor: '#ffffff',
-        cacheBust: true,
-      });
+      generatedBlob = await getExportBlob();
 
-      if (!blob) {
-        throw new Error('Could not create image blob');
+      const file = new File([generatedBlob], filename, { type: 'image/png' });
+
+      // Verify if navigator.share and file sharing are supported
+      const hasShareApi = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+      let canShareFiles = false;
+
+      if (hasShareApi) {
+        if (typeof navigator.canShare === 'function') {
+          try {
+            canShareFiles = navigator.canShare({ files: [file] });
+          } catch {
+            canShareFiles = false;
+          }
+        } else {
+          // In some older Android WebViews or mobile browsers, canShare isn't exposed but share() supports files
+          canShareFiles = true;
+        }
       }
 
-      if (navigator.clipboard && 'write' in navigator.clipboard) {
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            'image/png': blob,
-          }),
-        ]);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2500);
-      } else {
-        // Fallback: trigger download
-        handleDownloadPng();
+      if (hasShareApi && canShareFiles) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: `BSIT 1-1 Financial Statement - ${statement.name}`,
+            text: `BSIT 1-1 Financial Statement: ${statement.name} (Required: ${formatPeso(statement.requiredAmount)}/student)`,
+          });
+          // Successful share or closed share sheet
+          return;
+        } catch (shareErr: unknown) {
+          // If the user cancelled/closed the native Android share sheet, it throws an AbortError.
+          // This is normal user behavior, not an application failure!
+          if (
+            shareErr instanceof DOMException &&
+            (shareErr.name === 'AbortError' || shareErr.message?.toLowerCase().includes('abort'))
+          ) {
+            return;
+          }
+          // If share rejected due to permissions or platform rejection, proceed to download fallback
+          console.warn('Native file share failed, falling back to download:', shareErr);
+        }
       }
-    } catch (err) {
-      console.warn('Clipboard write failed or unsupported:', err);
-      // Fallback: download the file instead
-      handleDownloadPng();
+
+      // Graceful Fallback: Download file if native sharing is unavailable or not supported
+      downloadBlobAsFile(generatedBlob, filename);
+      setNoticeMessage('Native sharing was unavailable on this browser. The statement PNG was downloaded directly.');
+    } catch (err: unknown) {
+      console.error('Failed in share statement flow:', err);
+      const msg = err instanceof Error ? err.message : 'Failed to generate statement image.';
+      setExportError(msg);
     } finally {
       setIsGenerating(false);
+      setGeneratingAction(null);
+    }
+  };
+
+  /**
+   * Direct download option
+   */
+  const handleDownloadPng = async () => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    setGeneratingAction('download');
+    setExportError(null);
+    setNoticeMessage(null);
+
+    try {
+      const blob = await getExportBlob();
+      const filename = getExportFilename();
+      downloadBlobAsFile(blob, filename);
+    } catch (err: unknown) {
+      console.error('Failed to export PNG:', err);
+      const msg = err instanceof Error ? err.message : 'Failed to generate PNG image. Please try again.';
+      setExportError(msg);
+    } finally {
+      setIsGenerating(false);
+      setGeneratingAction(null);
+    }
+  };
+
+  /**
+   * Desktop option: Copy image directly to clipboard
+   */
+  const handleCopyToClipboard = async () => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    setGeneratingAction('copy');
+    setExportError(null);
+    setNoticeMessage(null);
+
+    try {
+      const blob = await getExportBlob();
+
+      // Verify ClipboardItem and clipboard write support
+      if (
+        typeof navigator !== 'undefined' &&
+        navigator.clipboard &&
+        typeof navigator.clipboard.write === 'function' &&
+        typeof ClipboardItem !== 'undefined'
+      ) {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              'image/png': blob,
+            }),
+          ]);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2500);
+          return;
+        } catch (clipErr) {
+          console.warn('navigator.clipboard.write failed:', clipErr);
+          setExportError('Could not copy image to clipboard. Use "Share Statement" or "Download" instead.');
+        }
+      } else {
+        setExportError('Clipboard image copying is not supported in this browser. Please use "Share" or "Download".');
+      }
+    } catch (err: unknown) {
+      console.error('Failed copying image blob:', err);
+      const msg = err instanceof Error ? err.message : 'Could not generate image.';
+      setExportError(msg);
+    } finally {
+      setIsGenerating(false);
+      setGeneratingAction(null);
     }
   };
 
@@ -104,87 +243,126 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
         aria-modal="true"
       >
         {/* Modal Top Bar */}
-        <div className="px-6 py-3.5 bg-slate-900 text-white flex items-center justify-between shrink-0">
+        <div className="px-5 sm:px-6 py-3.5 bg-slate-900 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-              <Sparkles className="w-4 h-4" />
+              <Share2 className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-white tracking-tight">Export Statement as PNG</h2>
-              <p className="text-xs text-slate-400">GC-ready image for Messenger and Class Announcements</p>
+              <h2 className="text-base font-semibold text-white tracking-tight">Export &amp; Share Statement</h2>
+              <p className="text-xs text-slate-400">Class GC &amp; Messenger Ready • {statement.name}</p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Action Toolbar */}
-        <div className="p-4 bg-slate-50 border-b border-slate-200 shrink-0 flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xs text-slate-600">
-            Previewing full report with all <span className="font-bold text-slate-900">{studentSummaries.length} students</span>.
+        {/* Action Toolbar with Mobile-First Hierarchy */}
+        <div className="p-3.5 sm:p-4 bg-slate-50 border-b border-slate-200 shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="text-xs text-slate-600 hidden sm:block">
+            Statement image includes all <span className="font-bold text-slate-900">{studentSummaries.length} students</span>.
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-2 justify-end w-full sm:w-auto">
+            {/* Desktop secondary: Copy to Clipboard */}
             <button
               onClick={handleCopyToClipboard}
               disabled={isGenerating}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 focus:outline-none transition-colors shadow-xs disabled:opacity-50"
+              className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 focus:outline-none transition-colors shadow-xs disabled:opacity-50"
+              title="Copy image to paste with Ctrl + V"
             >
               {copied ? (
                 <>
                   <Check className="w-4 h-4 text-emerald-600" />
-                  <span className="text-emerald-700">Copied to Clipboard!</span>
+                  <span className="text-emerald-700">Copied!</span>
+                </>
+              ) : isGenerating && generatingAction === 'copy' ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
+                  <span>Copying...</span>
                 </>
               ) : (
                 <>
-                  <Copy className="w-4 h-4" />
-                  <span>Copy Image to Clipboard</span>
+                  <Copy className="w-4 h-4 text-slate-500" />
+                  <span>Copy Image</span>
                 </>
               )}
             </button>
+
+            {/* Desktop secondary / Mobile fallback: Download PNG */}
             <button
               onClick={handleDownloadPng}
               disabled={isGenerating}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors shadow-xs disabled:opacity-50"
+              className="inline-flex sm:inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 focus:outline-none transition-colors shadow-xs disabled:opacity-50"
+              title="Download image file"
             >
-              {isGenerating ? (
+              {isGenerating && generatingAction === 'download' ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Generating PNG...</span>
+                  <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
+                  <span>Saving...</span>
                 </>
               ) : (
                 <>
-                  <Download className="w-4 h-4" />
-                  <span>Download PNG</span>
+                  <Download className="w-4 h-4 text-slate-600" />
+                  <span>Download</span>
+                </>
+              )}
+            </button>
+
+            {/* PRIMARY CTA: SHARE STATEMENT (Web Share API for Android/Mobile, auto-fallback to download) */}
+            <button
+              onClick={handleShare}
+              disabled={isGenerating}
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2 text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 transition-all shadow-xs disabled:opacity-60"
+            >
+              {isGenerating && generatingAction === 'share' ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                  <span>Preparing statement...</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-4 h-4 text-white" />
+                  <span>Share Statement</span>
                 </>
               )}
             </button>
           </div>
         </div>
 
+        {/* Notices and Non-blocking alerts */}
+        {noticeMessage && (
+          <div className="mx-4 sm:mx-6 mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-xs font-medium text-indigo-800 flex items-center gap-2 animate-in fade-in">
+            <Info className="w-4 h-4 shrink-0 text-indigo-600" />
+            <span>{noticeMessage}</span>
+          </div>
+        )}
+
         {exportError && (
-          <div className="mx-6 mt-3 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs font-medium text-rose-700 flex items-center gap-2">
+          <div className="mx-4 sm:mx-6 mt-3 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs font-medium text-rose-700 flex items-center gap-2 animate-in fade-in">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{exportError}</span>
           </div>
         )}
 
         {/* Scrollable Container with the Document to Export */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-100 flex justify-center">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-6 bg-slate-100 flex justify-center">
           {/* THE REPORT CONTAINER (Target of html-to-image) */}
           <div
             ref={reportRef}
-            className="w-[840px] max-w-full bg-white text-slate-900 p-8 shadow-md border border-slate-300 rounded-none shrink-0"
+            className="w-[840px] max-w-full bg-white text-slate-900 p-6 sm:p-8 shadow-md border border-slate-300 rounded-none shrink-0"
             style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}
           >
             {/* School / Section Header */}
             <div className="border-b-2 border-slate-900 pb-5 mb-5">
               <div className="flex items-start justify-between">
                 <div>
-                  <h1 className="text-2xl font-black tracking-tight text-slate-950 uppercase">
+                  <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-950 uppercase">
                     {headerTitle}
                   </h1>
                   <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase mt-0.5">
@@ -359,13 +537,13 @@ export const ExportStatementModal: React.FC<ExportStatementModalProps> = ({
         </div>
 
         {/* Modal Bottom Bar */}
-        <div className="bg-slate-50 px-6 py-3 border-t border-slate-200 flex items-center justify-between shrink-0">
-          <p className="text-xs text-slate-500">
-            Tip: You can paste the copied image directly into your Facebook Messenger Group Chat with <kbd className="px-1.5 py-0.5 bg-white border rounded text-[11px]">Ctrl</kbd> + <kbd className="px-1.5 py-0.5 bg-white border rounded text-[11px]">V</kbd>.
+        <div className="bg-slate-50 px-4 sm:px-6 py-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0">
+          <p className="text-xs text-slate-500 text-center sm:text-left">
+            On mobile, tap <strong className="text-slate-800">Share Statement</strong> and choose <strong className="text-slate-800">Messenger</strong> to send directly to your class group chat.
           </p>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+            className="w-full sm:w-auto px-4 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
           >
             Close
           </button>
