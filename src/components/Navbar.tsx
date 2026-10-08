@@ -1,8 +1,7 @@
 import React from 'react';
 import {
-  LayoutDashboard,
-  FileSpreadsheet,
   Plus,
+  BookOpen,
 } from 'lucide-react';
 import { Statement } from '../types';
 
@@ -25,91 +24,89 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-4">
-          {/* Logo & Section Brand */}
-          <div className="flex items-center gap-3">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
+          {/* Logo & Identity */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               type="button"
               onClick={() => onNavigate('dashboard')}
-              className="flex items-center gap-2.5 text-left group focus:outline-none"
+              className="flex items-center gap-2 text-left group focus:outline-hidden rounded-lg p-0.5"
             >
-              <div className="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-base shadow-xs group-hover:bg-slate-800 transition-colors">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-emerald-700 text-white flex items-center justify-center font-bold text-base sm:text-lg shrink-0">
                 ₱
               </div>
-              <div>
-                <span className="font-extrabold text-sm sm:text-base tracking-tight text-slate-950 block leading-tight">
-                  BSIT 1-1 Tracker
+              <div className="min-w-0">
+                <span className="font-bold text-sm sm:text-base text-slate-900 block leading-tight">
+                  BSIT 1-1
                 </span>
-                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
-                  Class Treasury
+                <span className="text-[10px] text-slate-500 font-medium block leading-none">
+                  Treasury
                 </span>
               </div>
             </button>
 
-            {/* Breadcrumb if inside statement */}
+            {/* Active Statement indicator */}
             {currentTab === 'statement' && activeStatement && (
-              <div className="hidden lg:flex items-center gap-2 text-xs text-slate-400 pl-2 border-l border-slate-200">
-                <span className="truncate max-w-[150px] font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+              <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-400 pl-2.5 border-l border-slate-200">
+                <span className="font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded truncate max-w-[180px]">
                   {activeStatement.name}
                 </span>
               </div>
             )}
           </div>
 
-          {/* Navigation Links */}
+          {/* Navigation Controls */}
           <nav className="flex items-center gap-1 sm:gap-2">
             <button
               type="button"
               onClick={() => onNavigate('dashboard')}
-              className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+              className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${
                 currentTab === 'dashboard'
-                  ? 'bg-slate-100 text-slate-900'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <LayoutDashboard className="w-4 h-4" />
+              <BookOpen className="w-3.5 h-3.5" />
               <span>Dashboard</span>
             </button>
 
-            {/* Statements quick select if statements exist */}
             {statements.length > 0 && (
-              <div className="relative group">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (statements.length > 0) {
-                      onNavigate('statement', activeStatementId || statements[0].id);
-                    }
-                  }}
-                  className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+              <button
+                type="button"
+                onClick={() => {
+                  onNavigate('statement', activeStatementId || statements[0].id);
+                }}
+                className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+                  currentTab === 'statement'
+                    ? 'bg-emerald-800 text-white'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+              >
+                <span>Ledger</span>
+                <span
+                  className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
                     currentTab === 'statement'
-                      ? 'bg-slate-100 text-slate-900'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      ? 'bg-emerald-900 text-emerald-100'
+                      : 'bg-slate-200 text-slate-700'
                   }`}
                 >
-                  <FileSpreadsheet className="w-4 h-4" />
-                  <span className="hidden sm:inline">Statements</span>
-                  <span className="text-[10px] font-mono bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full">
-                    {statements.length}
-                  </span>
-                </button>
-              </div>
+                  {statements.length}
+                </span>
+              </button>
             )}
-          </nav>
 
-          {/* Quick Action Button */}
-          <div className="flex items-center gap-2">
+            {/* New Statement Action */}
             <button
               type="button"
               onClick={onOpenCreateModal}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors shadow-xs"
+              className="inline-flex items-center gap-1 px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs sm:text-sm font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg transition-colors ml-1"
             >
-              <Plus className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="hidden sm:inline">Create Statement</span>
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">New Statement</span>
               <span className="sm:hidden">New</span>
             </button>
-          </div>
+          </nav>
         </div>
       </div>
     </header>

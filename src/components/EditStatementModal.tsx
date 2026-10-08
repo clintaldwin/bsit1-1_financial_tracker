@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Edit2, AlertCircle, Info } from 'lucide-react';
+import { X, AlertCircle } from 'lucide-react';
 import { Statement } from '../types';
-import { parsePeso, formatPeso } from '../utils/currency';
+import { parsePeso } from '../utils/currency';
 
 interface EditStatementModalProps {
   isOpen: boolean;
@@ -33,13 +33,13 @@ export const EditStatementModal: React.FC<EditStatementModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError('Statement name cannot be empty.');
+      setError('Name cannot be empty.');
       return;
     }
 
     const amount = parsePeso(amountStr);
     if (amount < 0 || isNaN(amount)) {
-      setError('Required amount must be zero or greater.');
+      setError('Amount must be 0 or greater.');
       return;
     }
 
@@ -47,29 +47,25 @@ export const EditStatementModal: React.FC<EditStatementModalProps> = ({
       name: name.trim(),
       requiredAmount: amount,
     });
+    onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div 
-        className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] transform transition-all"
+        className="w-full max-w-md bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]"
         role="dialog"
         aria-modal="true"
       >
         {/* Header */}
-        <div className="px-5 sm:px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
-              <Edit2 className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-base font-semibold text-white tracking-tight">Edit Statement Details</h2>
-              <p className="text-xs text-slate-400">{statement.name}</p>
-            </div>
-          </div>
+        <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
+          <h2 className="font-bold text-base text-slate-900">
+            Edit Statement
+          </h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+            className="text-slate-400 hover:text-slate-700 p-1 rounded-md"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
@@ -77,18 +73,11 @@ export const EditStatementModal: React.FC<EditStatementModalProps> = ({
 
         {/* Content Form */}
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5 text-xs text-amber-900">
-              <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <span>
-                Existing payments are preserved! When you change the required amount, every student&apos;s balance will be automatically recalculated.
-              </span>
-            </div>
-
+          <div className="p-4 sm:p-5 space-y-3.5 overflow-y-auto flex-1">
             {/* Statement Name */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
-                Statement Name <span className="text-rose-500">*</span>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Statement Name <span className="text-rose-600">*</span>
               </label>
               <input
                 type="text"
@@ -98,54 +87,48 @@ export const EditStatementModal: React.FC<EditStatementModalProps> = ({
                   setName(e.target.value);
                   if (error) setError('');
                 }}
-                className="block w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 font-medium"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-hidden focus:border-slate-500 font-medium"
               />
             </div>
 
             {/* Required Amount */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
-                Required Amount Per Student (PHP) <span className="text-rose-500">*</span>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Required Amount Per Student (₱) <span className="text-rose-600">*</span>
               </label>
-              <div className="relative rounded-xl shadow-xs">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 font-semibold">
-                  ₱
-                </div>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  required
-                  value={amountStr}
-                  onChange={(e) => {
-                    setAmountStr(e.target.value);
-                    if (error) setError('');
-                  }}
-                  className="block w-full rounded-xl border border-slate-300 pl-8 pr-4 py-2.5 text-slate-900 text-base font-mono font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600"
-                />
-              </div>
+              <input
+                type="number"
+                step="any"
+                min="0"
+                required
+                value={amountStr}
+                onChange={(e) => {
+                  setAmountStr(e.target.value);
+                  if (error) setError('');
+                }}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 font-mono text-base font-semibold focus:outline-hidden focus:border-slate-500"
+              />
             </div>
 
             {error && (
-              <div className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs font-medium text-rose-700">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{error}</span>
+              <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-lg text-xs font-medium text-rose-800">
+                {error}
               </div>
             )}
           </div>
 
           {/* Footer */}
-          <div className="bg-slate-50 px-5 sm:px-6 py-3.5 sm:py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 border-t border-slate-100 shrink-0">
+          <div className="bg-slate-50 px-4 py-3 flex items-center justify-end gap-2 border-t border-slate-200 shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors"
+              className="px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 rounded-lg"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 sm:py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/30 shadow-xs transition-colors"
+              className="px-4 py-1.5 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg"
             >
               Save Changes
             </button>

@@ -5,12 +5,14 @@ import {
   History,
   Edit2,
   Trash2,
-  PlusCircle,
-  FileSpreadsheet,
-  AlertCircle,
-  CheckCircle,
 } from 'lucide-react';
-import { Payment, Statement, StatementStudentSpec, Student, StudentStatementSummary } from '../types';
+import {
+  Payment,
+  Statement,
+  StatementStudentSpec,
+  Student,
+  StudentStatementSummary,
+} from '../types';
 import { calculateStatementSummary } from '../utils/calculations';
 import { formatPeso } from '../utils/currency';
 import { SummaryCards } from './SummaryCards';
@@ -75,119 +77,99 @@ export const StatementDetail: React.FC<StatementDetailProps> = ({
     setSelectedStudentForPayment(null);
   };
 
-  const rawTitle = statement.headerTitle?.trim();
-  const headerBannerText =
-    !rawTitle || rawTitle === 'BSIT 1-1 — INTRAMS FINANCIAL DATA'
-      ? 'BSIT 1-1 — FINANCIAL DATA'
-      : rawTitle;
-
   return (
-    <div className="space-y-6">
-      {/* Top Navigation & Back */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Top Mobile-Friendly Action Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <button
           type="button"
           onClick={onBackToDashboard}
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-xs transition-colors self-start"
+          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 bg-white border border-slate-300 px-3 py-1.5 rounded-lg transition-colors self-start"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Dashboard</span>
+          <ArrowLeft className="w-4 h-4 text-emerald-700" />
+          <span>Dashboard</span>
         </button>
 
         {/* Action Buttons Toolbar */}
-        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
-          {/* Export / Share PNG (Prominent) */}
+        <div className="grid grid-cols-3 sm:flex items-center gap-2 w-full sm:w-auto">
+          {/* Export / Share PNG (Emerald CTA) */}
           <button
             type="button"
             onClick={() => setIsExportModalOpen(true)}
-            className="col-span-2 sm:col-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-xs transition-colors"
+            className="col-span-3 sm:col-auto inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg transition-colors"
           >
             <Share2 className="w-4 h-4" />
-            <span>Share / Export PNG</span>
+            <span>Share & Export PNG</span>
           </button>
 
           {/* Payment History */}
           <button
             type="button"
             onClick={() => setIsHistoryModalOpen(true)}
-            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 active:bg-slate-100 rounded-xl shadow-xs transition-colors"
+            className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors"
           >
-            <History className="w-4 h-4 text-slate-500" />
+            <History className="w-3.5 h-3.5 text-slate-500" />
             <span>History ({statementPayments.length})</span>
           </button>
 
-          <div className="flex items-center gap-2">
-            {/* Edit Statement */}
-            <button
-              type="button"
-              onClick={() => setIsEditModalOpen(true)}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 active:bg-slate-100 rounded-xl shadow-xs transition-colors"
-              title="Edit Statement Name and Required Amount"
-            >
-              <Edit2 className="w-4 h-4 text-slate-500" />
-              <span>Edit</span>
-            </button>
+          {/* Edit Statement */}
+          <button
+            type="button"
+            onClick={() => setIsEditModalOpen(true)}
+            className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors"
+          >
+            <Edit2 className="w-3.5 h-3.5 text-slate-500" />
+            <span>Edit</span>
+          </button>
 
-            {/* Delete Statement */}
-            <button
-              type="button"
-              onClick={() => setIsDeleteConfirmOpen(true)}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-600 bg-white border border-rose-200 hover:bg-rose-50 active:bg-rose-100 rounded-xl shadow-xs transition-colors"
-              title="Delete this Statement"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>Delete</span>
-            </button>
-          </div>
+          {/* Delete Statement */}
+          <button
+            type="button"
+            onClick={() => setIsDeleteConfirmOpen(true)}
+            className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-rose-700 bg-white border border-rose-200 hover:bg-rose-50 rounded-lg transition-colors"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Delete</span>
+          </button>
         </div>
       </div>
 
-      {/* Main Statement Banner Header as required */}
-      <div className="bg-slate-900 text-white rounded-2xl p-6 sm:p-7 shadow-sm border border-slate-800 relative overflow-hidden">
-        <div className="relative z-10 space-y-2">
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold uppercase tracking-wider">
-            {headerBannerText}
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pt-1">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-3">
-              <span>Statement: <span className="text-emerald-400">{statement.name}</span></span>
+      {/* Main Statement Banner Header - Clean & Simple */}
+      <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div className="text-xs font-bold text-emerald-800 uppercase tracking-wide">
+              BSIT 1-1 Statement
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">
+              {statement.name}
             </h1>
-            <div className="text-sm sm:text-base font-medium text-slate-300">
-              Required Amount:{' '}
-              <span className="text-white font-bold font-mono text-lg">
-                {formatPeso(statement.requiredAmount)}
-              </span>{' '}
-              <span className="text-slate-400 text-xs font-normal">per student</span>
+            <div className="text-xs text-slate-500 mt-1">
+              Required: <strong className="text-slate-800 font-mono">{formatPeso(statement.requiredAmount)}</strong> / student · {students.length} Students
             </div>
           </div>
 
-          <div className="text-xs text-slate-400 flex flex-wrap items-center gap-4 pt-1">
-            <span>Roster: <strong className="text-slate-200">{students.length} BSIT 1-1 Students</strong></span>
-            <span>•</span>
-            <span>Class Treasurer: <strong className="text-emerald-400">Del Socorro, Joland</strong></span>
-            <span>•</span>
-            <span>Recorded Payments: <strong className="text-slate-200">{statementPayments.length} transactions</strong></span>
+          <div className="sm:text-right pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+            <span className="text-[11px] text-slate-500 uppercase font-semibold block">Target Total</span>
+            <span className="font-mono text-xl sm:text-2xl font-bold text-slate-900">
+              {formatPeso(calculations.totalRequired)}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary Cards Strip */}
       <SummaryCards
         calculations={calculations}
         totalStudents={students.length}
       />
 
-      {/* Student Table */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <span>Student Payment Roster</span>
-            <span className="text-xs font-normal text-slate-500">({students.length} students)</span>
+      {/* Student Table Roster */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between px-0.5">
+          <h2 className="text-base sm:text-lg font-bold text-slate-900">
+            Student Roster ({students.length})
           </h2>
-          <span className="text-xs text-slate-500">
-            Click &quot;Record Payment&quot; on any student to add a payment.
-          </span>
         </div>
 
         <StudentTable
@@ -237,9 +219,9 @@ export const StatementDetail: React.FC<StatementDetailProps> = ({
       {/* Delete Confirmation */}
       <ConfirmationDialog
         isOpen={isDeleteConfirmOpen}
-        title={`Delete Statement "${statement.name}"?`}
-        message="Deleting this statement will permanently remove its student payment records, payment history, and specifications. This action cannot be undone."
-        confirmText="Yes, Delete Statement"
+        title={`Delete "${statement.name}"?`}
+        message="This will delete all records and payments for this statement."
+        confirmText="Delete"
         cancelText="Cancel"
         isDestructive={true}
         onConfirm={() => {
